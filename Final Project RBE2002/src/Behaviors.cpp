@@ -4,6 +4,10 @@
 #include "IMU.h"
 #include "Median_filter.h"
 
+/* Eat my ass */
+
+/* And titties */
+
 //sensors
 Romi32U4ButtonA buttonA;
 IMU_sensor LSM6;
@@ -134,11 +138,14 @@ void Behaviors::Run(void)
             } 
             else {
                 Serial.println("start");
-                if(robot.TurnNonBlocking(90)){//rotate 90 degrees but using positioning since it turns and gets a move on
+                if(robot.MoveToPosition(0, .1)){//rotate 90 degrees but using positioning since it turns and gets a move on
                     Serial.println("end");
                     robot_state = WALL_FOLLOW;
+                }else{
+                    robot.MoveToPosition(0,.1);//redundancy
                 }
             }
+
             break;
         case BACK_UP:
             if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
