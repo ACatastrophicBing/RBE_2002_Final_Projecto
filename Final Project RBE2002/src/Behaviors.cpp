@@ -39,7 +39,10 @@ boolean Behaviors::DetectCollision(void) //since this goes before detectPickup, 
     data2[0] = data[2];
 
     if((abs(data[0]) > threshold) || (abs(data[1]) > threshold)) return 1;
-    else return 0;
+    else{
+        robot.Run(50,50);
+        return 0;
+    }
 }
 
 boolean Behaviors::DetectBeingPickedUp(void)
