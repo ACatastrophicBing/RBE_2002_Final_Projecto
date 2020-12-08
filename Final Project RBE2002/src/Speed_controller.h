@@ -36,6 +36,7 @@ class SpeedController{
         boolean Straight(int, int); //speed, duration
         boolean Curved(int,int,int); //speed left, speed right, duration
         boolean MoveToPosition(float,float); //target_x, target_y
+        boolean MoveToPositionBackwards(float,float); //target_x, target_y
         void Stop(void);
         float Constrain(float, float, float);
 };
