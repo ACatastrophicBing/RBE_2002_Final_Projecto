@@ -30,6 +30,7 @@ class SpeedController{
         };
         void Init(void);
         void Run(float, float); 
+        void ProcessWallFollowSpeed(float, float);
         boolean Turn(int,int); //degrees, direction of rotation: 0->left, 1->right
         boolean TurnNonBlocking(float); //degrees
         boolean Straight(int, int); //speed, duration
