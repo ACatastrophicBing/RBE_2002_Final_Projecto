@@ -111,20 +111,32 @@ boolean SpeedController::Turn(int degree, int direction)
     return 1;
 }
 
-boolean SpeedController::TurnNonBlocking(long starttime, int degree, int direction)
+boolean SpeedController::TurnNonBlocking(float degree)
 {
-    float speed = 50;
-    float w = 2*speed/0.141;//odometry equation for angular speed
-    float time = degree*PI/180.0/w;//find time it takes to turn that much
-    if((starttime + time) <= millis())
-    {
-        if(!direction) Run(speed,-speed);
-        else Run(-speed,speed);
-        return 0;
+    if(error_distance>= 0.01)
+    {    
+        float e_theta = odometry.ReadPose().THETA - degree;
+
+        E_theta += e_theta;
+
+        float ui_theta = Constrain(Kip*E_theta,-20,20);
+
+        float ud_theta = Constrain(10*Kdp*(e_theta-prev_e_theta),-10,10);
+
+        float u_theta = Kpp*180*e_theta+ui_theta+ud_theta;
+
+        float u_left = Constrain(u_theta, -50.0, 50.0);
+        float u_right = Constrain(-u_theta, -50.0, 50.0);
+
+        prev_e_theta = e_theta;
+
+        Run(u_left, u_right);//do thing at speed zoom
+        
+    } else{
+    E_theta = 0; //reset error info for next positioning
+    return 1;
     }
-    else{
-        return 1;
-    }
+    return 0;//now can go to next state pretty much
 }
 
 boolean SpeedController::Straight(int target_velocity, int time)
