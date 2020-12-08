@@ -14,7 +14,7 @@ void MedianFilter::Sort()//insertion sort
     }
 }
 
-void exch(float array[], int i, int j){
+void MedianFilter::exch(float array[], int i, int j){
     float temp = array[i];
     array[i] = array[j];
     array[j] = temp;

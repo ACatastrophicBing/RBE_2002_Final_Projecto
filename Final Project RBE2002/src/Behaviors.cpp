@@ -45,6 +45,24 @@ boolean Behaviors::DetectBeingPickedUp(void)
     else return 0;
 }
 
+boolean Behaviors::Drive(float distance, bool dir){//non blocking version of drive certain distance (mm), make sure to set time to millis() at start of case using this
+    float speed = 50;//speed of the robot for driving 10cm in mm/s
+    float driveTime = distance/speed;
+    if((time + driveTime) <= millis()){//if the time hasn't reached desired time
+        if(dir = true){//controls direction so we can do this for both drive 10cm and backup
+            robot.Run(speed, speed);
+        }
+        else{
+            robot.Run(-speed, -speed);
+        }
+        return false;
+    }
+    else{
+        return true;
+    }
+
+}
+
 void Behaviors::Stop(void)
 {
     robot.Stop();
@@ -67,7 +85,8 @@ void Behaviors::Run(void)
         break;
     case IDLE_2://Done, Tested
         if(buttonA.getSingleDebouncedRelease()){ 
-            robot_state = TURN_90; 
+            robot_state = BACK_UP; 
+            time = millis();//get the current time
             robot.Stop();             
         } 
         else { 
@@ -84,28 +103,53 @@ void Behaviors::Run(void)
             robot.Run(50,50);
         }
         break;
-    case DRIVE_FOR_10CM://Not finished
+    case DRIVE_FOR_10CM:
         if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
             robot_state = IDLE; 
             robot.Stop();             
         } 
         else {
             Serial.println("start");
-
-            Serial.println("end");
-            robot_state = IDLE;
+            if(Drive(100, true)){//drive until 100mm (10cm) has been reached
+                Serial.println("end");
+                robot_state = IDLE;
+            }
         }
         break;
         case TURN_90://Not Finished
-            //Back up turn 90
+            if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
+                robot_state = IDLE; 
+                robot.Stop();             
+            } 
+            else {
+                Serial.println("start");
+                if(robot.TurnNonBlocking(time, 90, true)){//rotate 90 degrees ccw
+                    Serial.println("end");
+                    robot_state = WALL_FOLLOW;
+                }
+            }
 
+            break;
+        case BACK_UP:
+            if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
+                robot_state = IDLE; 
+                robot.Stop();             
+            } 
+            else {
+                Serial.println("start");
+                if(Drive(500, false)){//drive backwards
+                    Serial.println("end");
+                    robot_state = TURN_90;
+                    time = millis();//get the current time
+                }
+            }
             break;
         case WALL_FOLLOW://Needs to accept the initial bump of going upwards, then go to the next bump and be like AHHH YOU BITCH and run for 10cm
             if(false){
 
             }else{
                 robot_state = DRIVE_FOR_10CM;
-                //now just needs to drive straight, easy way is to reset where its positioned, other easy way is to just make a new function to have it drive straight
+                time = millis();//get the current time
                 //no stop since we don't want the object on top to fall off
             }
             break;

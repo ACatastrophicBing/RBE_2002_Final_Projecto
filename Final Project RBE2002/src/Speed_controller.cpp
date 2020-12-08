@@ -111,6 +111,22 @@ boolean SpeedController::Turn(int degree, int direction)
     return 1;
 }
 
+boolean SpeedController::TurnNonBlocking(long starttime, int degree, int direction)
+{
+    float speed = 50;
+    float w = 2*speed/0.141;//odometry equation for angular speed
+    float time = degree*PI/180.0/w;//find time it takes to turn that much
+    if((starttime + time) <= millis())
+    {
+        if(!direction) Run(speed,-speed);
+        else Run(-speed,speed);
+        return 0;
+    }
+    else{
+        return 1;
+    }
+}
+
 boolean SpeedController::Straight(int target_velocity, int time)
 {
     motors.setEfforts(0, 0);

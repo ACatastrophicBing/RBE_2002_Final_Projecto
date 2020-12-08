@@ -31,6 +31,7 @@ class SpeedController{
         void Init(void);
         void Run(float, float); 
         boolean Turn(int,int); //degrees, direction of rotation: 0->left, 1->right
+        boolean TurnNonBlocking(long, int,int); //degrees, direction of rotation: 0->left, 1->right
         boolean Straight(int, int); //speed, duration
         boolean Curved(int,int,int); //speed left, speed right, duration
         boolean MoveToPosition(float,float); //target_x, target_y
