@@ -5,7 +5,7 @@
 
 class Behaviors{
     private:
-        int threshold = 100;
+        int threshold = 200;
         int threshold_pick_up = 800;
         long time = 0; //variable to hold the time whenever we want
         int data[3] = {0};
