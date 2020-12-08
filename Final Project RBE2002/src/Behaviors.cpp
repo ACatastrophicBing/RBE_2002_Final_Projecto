@@ -45,7 +45,7 @@ boolean Behaviors::DetectBeingPickedUp(void)
     else return 0;
 }
 
-boolean Behaviors::Drive(float distance, bool dir){//non blocking version of drive certain distance (mm), make sure to set time to millis() at start of case using this
+/*boolean Behaviors::Drive(float distance, bool dir){//non blocking version of drive certain distance (mm), make sure to set time to millis() at start of case using this
     float speed = 50;//speed of the robot for driving 10cm in mm/s
     float driveTime = distance/speed;
     if((time + driveTime) <= millis()){//if the time hasn't reached desired time
@@ -60,7 +60,15 @@ boolean Behaviors::Drive(float distance, bool dir){//non blocking version of dri
     else{
         return true;
     }
+}*/
 
+boolean straight(float distance){
+    if(robot.MoveToPosition(distance,0)){
+        robot.MoveToPosition(distance,0);
+    }else{
+        return true;
+    }
+    return false;
 }
 
 void Behaviors::Stop(void)
@@ -98,6 +106,7 @@ void Behaviors::Run(void)
         if (DetectCollision()){
             robot_state = IDLE_2;
             robot.Stop();
+            robot.Init();
             Serial.println("You sunk my battleship!");
         }else{
             robot.Run(50,50);
@@ -110,9 +119,11 @@ void Behaviors::Run(void)
         } 
         else {
             Serial.println("start");
-            if(Drive(100, true)){//drive until 100mm (10cm) has been reached
+            if(straight(.10)){//drive until .1m (10cm) has been reached
                 Serial.println("end");
                 robot_state = IDLE;
+            }else{
+                straight(.1);
             }
         }
         break;
@@ -123,9 +134,11 @@ void Behaviors::Run(void)
             } 
             else {
                 Serial.println("start");
-                if(robot.TurnNonBlocking(time, 90, true)){//rotate 90 degrees ccw
+                if(robot.MoveToPosition(0, .1)){//rotate 90 degrees but using positioning since it turns and gets a move on
                     Serial.println("end");
                     robot_state = WALL_FOLLOW;
+                }else{
+                    robot.MoveToPosition(0,.1);//redundancy
                 }
             }
 
@@ -137,10 +150,13 @@ void Behaviors::Run(void)
             } 
             else {
                 Serial.println("start");
-                if(Drive(500, false)){//drive backwards
+                if(straight(-.32)){//drive backwards
                     Serial.println("end");
                     robot_state = TURN_90;
                     time = millis();//get the current time
+                    robot.Init();
+                }else{
+                    straight(0.3);//redundancy
                 }
             }
             break;
