@@ -5,10 +5,12 @@
 
 class MedianFilter{
     private:
-        float array[5] = {0};
+        float measurements[5] = {0};//holds the actual measurements
+        float copy[5] = {0};//copy of measurements which will be sorted
+        void exch(float array[], int i, int j);//exchanges elements in given array
         
     public:
-        void Sort(int, int);
+        void Sort();//sorts the copy array from least to greatest
         void Init(void);
         float Filter(float);
 };
