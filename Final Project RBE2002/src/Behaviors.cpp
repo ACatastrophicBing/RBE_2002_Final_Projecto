@@ -3,6 +3,7 @@
 #include "Speed_controller.h"
 #include "IMU.h"
 #include "Median_filter.h"
+#include "Wall_following_controller.h"
 
 //------ Sacred Texts-----------
 /* Eat my ass */
@@ -16,7 +17,7 @@ IMU_sensor LSM6;
 MedianFilter med_x;
 MedianFilter med_y;
 MedianFilter med_z;
-
+WallFollowingController wallE;
 
 //motor-speed controller
 SpeedController robot;
@@ -54,27 +55,6 @@ boolean Behaviors::DetectBeingPickedUp(void)
     else return 0;
 }
 
-/*boolean Behaviors::Drive(float distance, bool dir){//non blocking version of drive certain distance (mm), make sure to set time to millis() at start of case using this
-    float speed = 50;//speed of the robot for driving 10cm in mm/s
-    float driveTime = distance/speed;
-    if((time + driveTime) <= millis()){//if the time hasn't reached desired time
-        if(dir = true){//controls direction so we can do this for both drive 10cm and backup
-            robot.Run(speed, speed);
-        }
-        else{
-            robot.Run(-speed, -speed);
-        }
-        return false;
-    }
-    else{
-        return true;
-    }
-}*/
-
-boolean straight(float distance){
-    return robot.MoveToPosition(distance,0);
-}
-
 void Behaviors::Stop(void)
 {
     robot.Stop();
@@ -104,8 +84,8 @@ void Behaviors::Run(void)
                 Serial.println("Back up");             
             } 
             break;
-        case DRIVE_FOR_COLLISION://Done, untested
-            if (DetectCollision()){
+        case DRIVE_FOR_COLLISION://Done, tested
+            if (DetectCollision()){//didn't include a button here to stop it from killing itself since we can just give it a wack and it does the same thing
                 robot_state = IDLE_2;
                 robot.Stop();
                 robot.Init();
@@ -114,19 +94,19 @@ void Behaviors::Run(void)
                 robot.Run(50,50);
             }
             break;
-        case DRIVE_FOR_10CM:
+        case DRIVE_FOR_10CM://Done, untested
             if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
                 robot_state = IDLE; 
                 robot.Stop();             
             } 
             else {
-                if(straight(.10)){//drive until .1m (10cm) has been reached
+                if(robot.MoveToPosition(.1,0)){//drive until .1m (10cm) has been reached
                     Serial.println("end");
                     robot_state = IDLE;
                 }
             }
             break;
-        case TURN_90://Not Finished
+        case TURN_90://Done, untested
             if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
                 robot_state = IDLE; 
                 robot.Stop();             
@@ -136,11 +116,12 @@ void Behaviors::Run(void)
                     Serial.println("wall follow");
                     robot.Stop();
                     robot_state = WALL_FOLLOW;
+                    time = millis();
                 }
             }
 
             break;
-        case BACK_UP:
+        case BACK_UP://Done, untested
             if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
                 robot_state = IDLE; 
                 robot.Stop();             
@@ -150,13 +131,24 @@ void Behaviors::Run(void)
                     Serial.println("Turn 90");
                     robot_state = TURN_90;
                     time = millis();//get the current time
-                    robot.Init();
+                    robot.Stop();
                 }
             }
             break;
-        case WALL_FOLLOW://Needs to accept the initial bump of going upwards, then go to the next bump and be like AHHH YOU BITCH and run for 10cm
-            if(false){
-                
+        case WALL_FOLLOW://Maybe done, completely untested
+            //Needs to accept the initial bump of going upwards, then go to the next bump and be like AHHH YOU BITCH and run for 10cm
+            if(DetectBeingPickedUp()&&(time+750)<millis()){//this is the collision detection, for now I'm assuming that it only passes the threshold
+            //when it initially is going up the ramp and when its going down the ramp
+            //if this isn't the case, all we have to do is use collisioncounter++ and once collisioncounter > 3, we end it
+                collisioncounter++;
+                upramp = true;
+                time = millis();
+            }
+            if(!upramp){//This boolean has to check if its gone up the ramp, topped at the ramp, then gone down the ramp, and then turns true once
+            //the robot hits the floor one last time, we have to figure out if the threshold is reached when the robot goes up the ramp or tops out
+            //If upramp is false, it will continue wall following, if upramp is true, it will end
+            //Also, the code to change it to function when all 4 instances of going up or down are collisions is just if(collisioncounte<4)
+                robot.Run(30-wallE.Process(30),30+wallE.Process(30));//no idea how process works, but this might be the wall follow code
             }
             else{
                 robot.Stop();
