@@ -4,11 +4,9 @@
 #include "IMU.h"
 #include "Median_filter.h"
 
-//------ Sacred Texts-----------
 /* Eat my ass */
 
 /* And titties */
-//------------------------
 
 //sensors
 Romi32U4ButtonA buttonA;
@@ -41,10 +39,7 @@ boolean Behaviors::DetectCollision(void) //since this goes before detectPickup, 
     data2[0] = data[2];
 
     if((abs(data[0]) > threshold) || (abs(data[1]) > threshold)) return 1;
-    else{
-        robot.Run(50,50);
-        return 0;
-    }
+    else return 0;
 }
 
 boolean Behaviors::DetectBeingPickedUp(void)
@@ -106,10 +101,6 @@ void Behaviors::Run(void)
             time = millis();//get the current time
             robot.Stop();             
         } 
-        else { 
-            robot_state = IDLE;
-            robot.Stop(); 
-        }   
         break;
     case DRIVE_FOR_COLLISION://Done, untested
         if (DetectCollision()){
@@ -159,13 +150,13 @@ void Behaviors::Run(void)
             } 
             else {
                 Serial.println("start");
-                if(straight(-.32)){//drive backwards
+                if(straight(-0.32)){//drive backwards
                     Serial.println("end");
                     robot_state = TURN_90;
                     time = millis();//get the current time
                     robot.Init();
                 }else{
-                    straight(0.3);//redundancy
+                    straight(-0.32);//redundancy
                 }
             }
             break;
