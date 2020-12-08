@@ -58,20 +58,22 @@ void SpeedController::Run(float target_velocity_left, float target_velocity_righ
 
 boolean SpeedController::MoveToPosition(float target_x, float target_y)
 {
-    if(error_distance>= 0.01)
-    {    
-        float e_x = odometry.ReadPose().X - target_x;
-        float e_y = odometry.ReadPose().Y - target_y;
-        float e_theta;
+    float e_x = odometry.ReadPose().X - target_x;
+    float e_y = odometry.ReadPose().Y - target_y;
+    float e_theta;
 
-        if(e_y == 0 && e_x == 0){
-            e_theta = 0;
-        }
-        else{
-            e_theta = odometry.ReadPose().THETA - atan2(-e_y, -e_x);
-        }
+    if(e_y == 0 && e_x == 0){
+        e_theta = 0;
+    }
+    else{
+        e_theta = odometry.ReadPose().THETA - atan2(-e_y, -e_x);
+    }
         
-        error_distance = sqrt(pow(e_x, 2) + pow(e_y,2));
+    error_distance = sqrt(pow(e_x, 2) + pow(e_y,2));
+    
+    if(abs(error_distance) >= 0.01)
+    {    
+        
 
         E_theta += e_theta;
         E_distance += error_distance;
@@ -129,10 +131,9 @@ boolean SpeedController::Turn(int degree, int direction)
 
 boolean SpeedController::TurnNonBlocking(float degree)
 {
-    if(error_distance>= 0.01)
+    float e_theta = odometry.ReadPose().THETA - degree*PI/180;
+    if(abs(e_theta) >= 0.02)
     {    
-        float e_theta = odometry.ReadPose().THETA - degree;
-
         E_theta += e_theta;
 
         float ui_theta = Constrain(Kip*E_theta,-20,20);
