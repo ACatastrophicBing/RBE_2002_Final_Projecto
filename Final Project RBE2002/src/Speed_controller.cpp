@@ -42,7 +42,7 @@ void SpeedController::Run(float target_velocity_left, float target_velocity_righ
 
 boolean SpeedController::MoveToPosition(float target_x, float target_y)
 {
-    do
+    if(error_distance>= 0.01)
     {    
         float e_x = odometry.ReadPose().X - target_x;
         float e_y = odometry.ReadPose().Y - target_y;
@@ -77,10 +77,12 @@ boolean SpeedController::MoveToPosition(float target_x, float target_y)
 
         Run(u_left, u_right);//do thing at speed zoom
         
-    } while (error_distance >= 0.01); 
+    } else{
     E_theta = 0; //reset error info for next positioning
     E_distance = 0;
-    return 1;//now can go to next state pretty much
+    return 1;
+    }
+    return 0;//now can go to next state pretty much
 }
 
 float SpeedController::Constrain(float value, float min, float max)

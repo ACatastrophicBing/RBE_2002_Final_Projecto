@@ -54,7 +54,7 @@ void Behaviors::Run(void)
 {
     switch (robot_state)
     {
-    case IDLE:
+    case IDLE://Done, Tested
         if(buttonA.getSingleDebouncedRelease()){ 
             robot_state = DRIVE_FOR_COLLISION;
             delay(1000);//basic little delay here, lets pretend its not blocking ;P
@@ -65,7 +65,7 @@ void Behaviors::Run(void)
             robot.Stop(); 
         }   
         break;
-    case IDLE_2:
+    case IDLE_2://Done, Tested
         if(buttonA.getSingleDebouncedRelease()){ 
             robot_state = TURN_90; 
             robot.Stop();             
@@ -75,7 +75,7 @@ void Behaviors::Run(void)
             robot.Stop(); 
         }   
         break;
-    case DRIVE_FOR_COLLISION:
+    case DRIVE_FOR_COLLISION://Done, untested
         if (DetectCollision()){
             robot_state = IDLE_2;
             robot.Stop();
@@ -84,19 +84,21 @@ void Behaviors::Run(void)
             robot.Run(50,50);
         }
         break;
-    case DRIVE_FOR_10CM:
+    case DRIVE_FOR_10CM://Not finished
         if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
             robot_state = IDLE; 
             robot.Stop();             
         } 
         else {
             Serial.println("start");
-            
+
             Serial.println("end");
             robot_state = IDLE;
         }
         break;
-        case TURN_90:
+        case TURN_90://Not Finished
+            //Back up turn 90
+
             break;
         case WALL_FOLLOW://Needs to accept the initial bump of going upwards, then go to the next bump and be like AHHH YOU BITCH and run for 10cm
             if(false){
