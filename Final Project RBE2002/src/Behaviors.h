@@ -10,6 +10,8 @@ class Behaviors{
         long time = 0; //variable to hold the time whenever we want
         int data[3] = {0};
         int data2[3] = {0}; //used to prevent random spikes from messing with state
+        boolean upramp = false; 
+        int collisioncounter = 0;
             /*
             Need to run wait 1 second then drive until collision
             Collided -> Wait for button
