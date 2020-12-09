@@ -16,7 +16,9 @@ class IMU_sensor{
         };
         void Init(void);
         void PrintAcceleration(void);
+        void PrintGyro(void);
         acceleration_data ReadAcceleration(void);
+        acceleration_data ReadGyro(void);
 };
 
 #endif

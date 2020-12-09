@@ -34,12 +34,14 @@ void Behaviors::Init(void)
 boolean Behaviors::DetectCollision(void) //since this goes before detectPickup, this will also act as collection of imu data for both functions
 {
     auto data_acc = LSM6.ReadAcceleration();
+    //auto data_gyo = LSM6.ReadGyro();
     data[0] = med_x.Filter(data_acc.X)*0.061;
     data[1] = med_y.Filter(data_acc.Y)*0.061;
     data[2] = med_z.Filter(data_acc.Z)*0.061;
-    
-    for(int i = 2; i > 0; i--) data2[i] = data2[i-1];
-    data2[0] = data[2];
+
+    /*data2[0] = med_x.Filter(data_gyo.X)*0.00875;
+    data2[1] = med_y.Filter(data_gyo.Y)*0.00875;
+    data2[2] = med_z.Filter(data_gyo.Z)*0.00875;*/
 
     if((abs(data[0]) > threshold) || (abs(data[1]) > threshold)) return 1;
     else{
@@ -48,10 +50,14 @@ boolean Behaviors::DetectCollision(void) //since this goes before detectPickup, 
     }
 }
 
-boolean Behaviors::DetectBeingPickedUp(void)
-{
-    if((abs(data2[0]) < threshold_pick_up) && (abs(data2[1]) < threshold_pick_up) && (abs(data2[2]) < threshold_pick_up)
-        && (abs(data2[0]) > 0) && (abs(data2[1]) > 0) && (abs(data2[2]) > 0) ) return 1;
+boolean Behaviors::DetectRampEnd(void){ 
+    //auto data_acc = LSM6.ReadAcceleration();
+    auto data_gyo = LSM6.ReadGyro();
+    //data[2] = med_z.Filter(data_acc.Z)*0.061;
+    data2[1] = med_y.Filter(data_gyo.Y);
+
+    if(abs(data2[1]) > threshold_ramp){
+    return 1;   }
     else return 0;
 }
 
@@ -137,12 +143,14 @@ void Behaviors::Run(void)
             break;
         case WALL_FOLLOW://Maybe done, completely untested
             //Needs to accept the initial bump of going upwards, then go to the next bump and be like AHHH YOU BITCH and run for 10cm
-            if(DetectBeingPickedUp()&&(time+750)<millis()){//this is the collision detection, for now I'm assuming that it only passes the threshold
+            if(DetectRampEnd()&&(time+750)<millis()){//this is the collision detection, for now I'm assuming that it only passes the threshold
             //when it initially is going up the ramp and when its going down the ramp
             //if this isn't the case, all we have to do is use collisioncounter++ and once collisioncounter > 3, we end it
                 collisioncounter++;
                 upramp = true;
                 time = millis();
+                Serial.println("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
+                Serial.println(collisioncounter);
             }
             if(!upramp){//This boolean has to check if its gone up the ramp, topped at the ramp, then gone down the ramp, and then turns true once
             //the robot hits the floor one last time, we have to figure out if the threshold is reached when the robot goes up the ramp or tops out
@@ -151,6 +159,7 @@ void Behaviors::Run(void)
            
             int speed = wall_follow.Process(40); //distance in [cm]
             robot.Run(50-speed,50+speed); //speed in [[mm/s]]
+            LSM6.PrintGyro();
 
 
             }
