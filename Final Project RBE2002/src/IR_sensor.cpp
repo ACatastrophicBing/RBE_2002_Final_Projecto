@@ -13,8 +13,12 @@ float IRsensor::PrintData(void)
 
 float IRsensor::ReadData(void)
 {
-  float reading = (float)1/analogRead(pin_IR);
-  
-  float speed = (float)5469*reading + 0.589;//slope of the line I calculate from calibration
-  return speed;
+  float ir_val = analogRead(pin_IR);
+  float x = (1/ir_val);
+ // float x = (ir_val);
+  //Serial.println(x);
+  delay(50);
+//y=5798*x+-1.73
+  float ir_cm_y = (((5798*x)-1.73));
+  return ir_cm_y;
 }
