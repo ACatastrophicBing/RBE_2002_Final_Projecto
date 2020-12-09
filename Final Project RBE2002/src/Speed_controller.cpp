@@ -114,8 +114,10 @@ boolean SpeedController::MoveToPositionBackwards(float target_x, float target_y)
     }
     else{
         float c_theta = odometry.ReadPose().THETA + PI;//current theta but add PI because we driving backwards
-        if(c_theta >= 2*PI) c_theta - 2*PI; //control bounds of c_theta
-        e_theta = c_theta - atan2(-e_y, -e_x);
+        if(c_theta >= 2*PI) c_theta = c_theta - 2*PI; //control bounds of c_theta
+        float n_theta = atan2(-e_y, -e_x);
+        if(n_theta < 0) n_theta = n_theta + 2*PI; 
+        e_theta = c_theta - n_theta;
     }
         
     error_distance = sqrt(pow(e_x, 2) + pow(e_y,2));

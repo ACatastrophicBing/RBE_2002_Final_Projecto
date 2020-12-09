@@ -127,7 +127,7 @@ void Behaviors::Run(void)
                 robot.Stop();             
             } 
             else {
-                if(robot.MoveToPositionBackwards(-0.32, 0)){//drive backwards
+                if(robot.MoveToPositionBackwards(-0.1, 0)){//drive backwards
                     Serial.println("Turn 90");
                     robot_state = TURN_90;
                     time = millis();//get the current time
