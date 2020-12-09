@@ -17,7 +17,7 @@ IMU_sensor LSM6;
 MedianFilter med_x;
 MedianFilter med_y;
 MedianFilter med_z;
-WallFollowingController wallE;
+WallFollowingController wall_follow;
 
 //motor-speed controller
 SpeedController robot;
@@ -112,7 +112,7 @@ void Behaviors::Run(void)
                 robot.Stop();             
             } 
             else {
-                if(robot.TurnNonBlocking(90)){//rotate 90 degrees but using positioning since it turns and gets a move on
+                if(robot.TurnNonBlocking(-90)){//rotate 90 degrees but using positioning since it turns and gets a move on
                     Serial.println("wall follow");
                     robot.Stop();
                     robot_state = WALL_FOLLOW;
@@ -148,7 +148,11 @@ void Behaviors::Run(void)
             //the robot hits the floor one last time, we have to figure out if the threshold is reached when the robot goes up the ramp or tops out
             //If upramp is false, it will continue wall following, if upramp is true, it will end
             //Also, the code to change it to function when all 4 instances of going up or down are collisions is just if(collisioncounte<4)
-                robot.Run(30-wallE.Process(30),30+wallE.Process(30));//no idea how process works, but this might be the wall follow code
+           
+            int speed = wall_follow.Process(20); //distance in [cm]
+            robot.Run(50-speed,50+speed); //speed in [[mm/s]]
+
+
             }
             else{
                 robot.Stop();
