@@ -149,7 +149,7 @@ void Behaviors::Run(void)
             //If upramp is false, it will continue wall following, if upramp is true, it will end
             //Also, the code to change it to function when all 4 instances of going up or down are collisions is just if(collisioncounte<4)
            
-            int speed = wall_follow.Process(20); //distance in [cm]
+            int speed = wall_follow.Process(40); //distance in [cm]
             robot.Run(50-speed,50+speed); //speed in [[mm/s]]
 
 
