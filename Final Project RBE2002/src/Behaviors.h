@@ -7,6 +7,7 @@ class Behaviors{
     private:
         int threshold = 200;
         int threshold_pick_up = 800;
+        int ramp_threshold = 400;
         long time = 0; //variable to hold the time whenever we want
         int data[3] = {0};
         int data2[3] = {0}; //used to prevent random spikes from messing with state
@@ -26,6 +27,7 @@ class Behaviors{
         void Stop(void);
         void Run(void);
         boolean DetectCollision(void);
+        boolean DetectRampEnding(void);
         boolean DetectBeingPickedUp(void);
         boolean Drive(float distance, bool dir);//true = straight
 };

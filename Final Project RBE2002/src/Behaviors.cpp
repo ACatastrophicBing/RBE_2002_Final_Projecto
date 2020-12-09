@@ -3,6 +3,7 @@
 #include "Speed_controller.h"
 #include "IMU.h"
 #include "Median_filter.h"
+#include "Wall_following_controller.h"
 
 //------ Sacred Texts-----------
 /* Eat my ass */
@@ -20,7 +21,7 @@ MedianFilter med_z;
 
 //motor-speed controller
 SpeedController robot;
-
+WallFollowingController wall_follow;
 void Behaviors::Init(void)
 {
     LSM6.Init();
@@ -54,6 +55,22 @@ boolean Behaviors::DetectBeingPickedUp(void)
     else return 0;
 }
 
+boolean Behaviors::DetectRampEnding(void){
+    auto data_acc = LSM6.ReadAcceleration();
+    data[0] = med_x.Filter(data_acc.X)*0.061;
+    data[1] = med_y.Filter(data_acc.Y)*0.061;
+    data[2] = med_z.Filter(data_acc.Z)*0.061;
+    if((abs(data[2]) < ramp_threshold)){
+        Serial.println("Z IMU: ");
+        Serial.print(data[2]);
+        Serial.println("");
+        return 1;
+    }
+    else{
+        return 0;
+    }
+}
+
 /*boolean Behaviors::Drive(float distance, bool dir){//non blocking version of drive certain distance (mm), make sure to set time to millis() at start of case using this
     float speed = 50;//speed of the robot for driving 10cm in mm/s
     float driveTime = distance/speed;
@@ -71,9 +88,11 @@ boolean Behaviors::DetectBeingPickedUp(void)
     }
 }*/
 
+/*
 boolean straight(float distance){
     return robot.MoveToPosition(distance,0);
 }
+*/
 
 void Behaviors::Stop(void)
 {
@@ -89,7 +108,7 @@ void Behaviors::Run(void)
                 robot_state = DRIVE_FOR_COLLISION;
                 delay(1000);//basic little delay here, lets pretend its not blocking ;P
                 robot.Stop();
-                Serial.println("State 1");       
+                Serial.println("Drive for Collision");       
             } 
             else { 
                 robot_state = IDLE;
@@ -109,7 +128,7 @@ void Behaviors::Run(void)
                 robot_state = IDLE_2;
                 robot.Stop();
                 robot.Init();
-                Serial.println("Oof Ow Collision Detected");
+                Serial.println("Collision Detected");
             }else{
                 robot.Run(50,50);
             }
@@ -120,19 +139,19 @@ void Behaviors::Run(void)
                 robot.Stop();             
             } 
             else {
-                if(straight(.10)){//drive until .1m (10cm) has been reached
+                if(robot.Straight(50,2)){//drive until .1m (10cm) has been reached
                     Serial.println("end");
                     robot_state = IDLE;
                 }
             }
             break;
-        case TURN_90://Not Finished
+        case TURN_90:
             if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
                 robot_state = IDLE; 
                 robot.Stop();             
             } 
             else {
-                if(robot.TurnNonBlocking(90)){//rotate 90 degrees but using positioning since it turns and gets a move on
+                if(robot.TurnNonBlocking(-90)){//rotate 90 degrees but using positioning since it turns and gets a move on
                     Serial.println("wall follow");
                     robot.Stop();
                     robot_state = WALL_FOLLOW;
@@ -146,19 +165,24 @@ void Behaviors::Run(void)
                 robot.Stop();             
             } 
             else {
-                if(straight(-0.32)){//drive backwards
+//----------------------- CHANGED TO REVERSE---------------------------
+                    robot.Reverse(50,10);
                     Serial.println("Turn 90");
                     robot_state = TURN_90;
                     time = millis();//get the current time
                     robot.Init();
-                }
-            }
-            break;
-        case WALL_FOLLOW://Needs to accept the initial bump of going upwards, then go to the next bump and be like AHHH YOU BITCH and run for 10cm
-            if(false){
-                
+                    break;
+                    }
+//------------------UPDATED-----------------------
+        case WALL_FOLLOW:
+            if(DetectRampEnding() == 0){
+            wall_follow.Init();
+             int speed = wall_follow.Process(30); //distance in [cm]
+            robot.ProcessWallFollowSpeed(50-speed,50+speed); //speed in [[mm/s]]
+            Serial.println("Following Wall");
             }
             else{
+                Serial.println("Ramp End Detected");
                 robot.Stop();
                 robot_state = DRIVE_FOR_10CM;
                 Serial.println("10 cm");
@@ -166,5 +190,5 @@ void Behaviors::Run(void)
                 //no stop since we don't want the object on top to fall off
             }
             break;
-    };
+            }
 }

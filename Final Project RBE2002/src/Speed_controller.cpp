@@ -15,6 +15,24 @@ void SpeedController::Init(void)
     odometry.Init();
 }
 
+boolean SpeedController::Reverse(int target_velocity, int distance) //in mm/s and cm
+{
+    motors.setEfforts(0, 0);
+    
+    uint32_t duration = 1000*((distance*10)/(float)target_velocity); //in ms
+    unsigned long now = millis();
+
+    //Serial.print(duration);
+    //Serial.print('\t');
+    //Serial.println(now);
+
+    while ((unsigned long)(millis() - now) <= duration){
+        Run(-target_velocity,-target_velocity);
+    }
+    motors.setEfforts(0, 0);
+    return 1;
+}
+
 void SpeedController::ProcessWallFollowSpeed(float target_velocity_left, float target_velocity_right)
 {
     if(MagneticEncoder.UpdateEncoderCounts()){

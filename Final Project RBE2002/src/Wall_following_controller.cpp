@@ -16,7 +16,7 @@ void WallFollowingController::Init(void)
 float WallFollowingController::Process(float target_distance)
 {
   float time = millis();
-  Serial.println(time-prev_time);
+  //Serial.println(time-prev_time);
   float IR_reading = SharpIR.ReadData();
   float IR_error = IR_reading - target_distance;
   float u = (Kp * IR_error) + (Kd*((IR_error-prev_error)/(time-prev_time)));
