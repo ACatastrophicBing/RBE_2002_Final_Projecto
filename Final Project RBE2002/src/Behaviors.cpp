@@ -5,12 +5,6 @@
 #include "Median_filter.h"
 #include "Wall_following_controller.h"
 
-//------ Sacred Texts-----------
-/* Eat my ass */
-
-/* And titties */
-//------------------------
-
 //sensors
 Romi32U4ButtonA buttonA;
 IMU_sensor LSM6;
@@ -21,6 +15,7 @@ WallFollowingController wall_follow;
 
 //motor-speed controller
 SpeedController robot;
+Romi32U4Motors motors3;
 
 void Behaviors::Init(void)
 {
@@ -91,7 +86,7 @@ void Behaviors::Run(void)
             } 
             break;
         case DRIVE_FOR_COLLISION://Done, tested
-            if (DetectCollision()){//didn't include a button here to stop it from killing itself since we can just give it a wack and it does the same thing
+            if (DetectCollision()){
                 robot_state = IDLE_2;
                 robot.Stop();
                 robot.Init();
@@ -99,21 +94,21 @@ void Behaviors::Run(void)
             }else{
                 robot.Run(50,50);
             }
-            break;
+            break;        
         case DRIVE_FOR_10CM://Done, untested
-            if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
+            if(buttonA.getSingleDebouncedRelease()){
                 robot_state = IDLE; 
                 robot.Stop();             
             } 
             else {
                 if(robot.MoveToPosition(.1,0)){//drive until .1m (10cm) has been reached
                     Serial.println("end");
-                    robot_state = IDLE;
+                    robot_state = DIE_BABY_YODA;
                 }
             }
             break;
         case TURN_90://Done, untested
-            if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
+            if(buttonA.getSingleDebouncedRelease()){ 
                 robot_state = IDLE; 
                 robot.Stop();             
             } 
@@ -128,7 +123,7 @@ void Behaviors::Run(void)
 
             break;
         case BACK_UP://Done, untested
-            if(buttonA.getSingleDebouncedRelease()){ //If for some reason we have to stop it since its killing itself
+            if(buttonA.getSingleDebouncedRelease()){ 
                 robot_state = IDLE; 
                 robot.Stop();             
             } 
@@ -157,10 +152,9 @@ void Behaviors::Run(void)
             //If upramp is false, it will continue wall following, if upramp is true, it will end
             //Also, the code to change it to function when all 4 instances of going up or down are collisions is just if(collisioncounte<4)
            
-            int speed = wall_follow.Process(40); //distance in [cm]
-            robot.Run(50-speed,50+speed); //speed in [[mm/s]]
-            LSM6.PrintGyro();
-
+                int speed = wall_follow.Process(40); //distance in [cm]
+                robot.Run(50-speed,50+speed); //speed in [[mm/s]]
+                LSM6.PrintGyro();
 
             }
             else{
@@ -170,6 +164,23 @@ void Behaviors::Run(void)
                 time = millis();//get the current time
                 //no stop since we don't want the object on top to fall off
             }
+            break;
+        
+        case DIE_BABY_YODA:
+            //Throws baby yoda off the robot to prove he is not glued :(
+            long end_time = millis()+20000;
+            while(millis()<end_time){
+                motors3.setEfforts(0,0);
+            }
+
+            robot.Turn(90, 0);
+            
+            long end_time2 = millis() + 1000;
+            while(millis()<end_time2){
+                motors3.setEfforts(300,300);
+            }
+            motors3.setEfforts(0,0);
+            robot_state = IDLE;
             break;
     };
 }
